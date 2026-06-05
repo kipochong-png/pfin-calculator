@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earnest Partners - MII Premium Financing Calculator</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0f0a1a;color:#e0e0e0;min-height:100vh;}
+.header{background:linear-gradient(135deg,#1a0a2e,#2d1b4e);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #7c3aed;}
+.header-left{display:flex;align-items:center;gap:16px;}
+.logo{width:40px;height:40px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;color:#fff;}
+.header-title h1{font-size:16px;color:#a855f7;}
+.header-title p{font-size:11px;color:#9ca3af;}
+.currency-toggle{display:flex;align-items:center;gap:8px;}
+.currency-toggle label{font-size:12px;color:#9ca3af;}
+.toggle-switch{position:relative;width:48px;height:24px;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#374151;border-radius:12px;transition:.3s;}
+.toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+.toggle-switch input:checked+.toggle-slider{background:#7c3aed;}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(24px);}
+.main{display:flex;gap:16px;padding:16px;height:calc(100vh - 60px);overflow:hidden;}
+.panel-left{width:380px;min-width:380px;overflow-y:auto;background:#1a1025;border-radius:12px;border:1px solid #2d1b4e;padding:16px;}
+.panel-right{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+.section-title{font-size:13px;font-weight:600;color:#a855f7;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #2d1b4e;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.form-group{display:flex;flex-direction:column;gap:3px;}
+.form-group.full{grid-column:1/-1;}
+.form-group label{font-size:11px;color:#9ca3af;}
+.form-group select,.form-group input{background:#0f0a1a;border:1px solid #374151;border-radius:6px;padding:7px 10px;color:#e0e0e0;font-size:13px;}
+.form-group select:focus,.form-group input:focus{outline:none;border-color:#7c3aed;}
+.btn-calc{width:100%;padding:10px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;}
+.btn-calc:hover{opacity:0.9;}
+.card{background:#1a1025;border-radius:12px;border:1px solid #2d1b4e;padding:16px;}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.summary-item{text-align:center;}
+.summary-item .val{font-size:18px;font-weight:700;color:#a855f7;}
+.summary-item .lbl{font-size:10px;color:#9ca3af;margin-top:2px;}
+.chart-container{position:relative;height:260px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead th{background:#2d1b4e;color:#a855f7;padding:8px 6px;text-align:right;position:sticky;top:0;}
+thead th:first-child{text-align:left;}
+tbody td{padding:6px;text-align:right;border-bottom:1px solid #1f1535;}
+tbody td:first-child{text-align:left;}
+tbody tr:hover{background:#2d1b4e33;}
+.table-wrap{max-height:300px;overflow-y:auto;}
+@media(max-width:860px){
+.main{flex-direction:column;height:auto;overflow:auto;}
+.panel-left{width:100%;min-width:auto;}
+.summary-grid{grid-template-columns:repeat(2,1fr);}
+.table-wrap{overflow-x:auto;}
+}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="header-left">
+<div class="logo">MII</div>
+<div class="header-title">
+<h1>Earnest Partners</h1>
+<p>Premium Financing Calculator v2.0</p>
+</div>
+</div>
+<div class="currency-toggle">
+<label>USD</label>
+<div class="toggle-switch">
+<input type="checkbox" id="currToggle">
+<label class="toggle-slider" for="currToggle"></label>
+</div>
+<label>HKD</label>
+</div>
+</div>
+<div class="main">
+<div class="panel-left">
+<div class="section-title">Policy Information</div>
+<div class="form-grid">
+<div class="form-group"><label>Age</label><input type="number" id="age" value="35" min="18" max="75"></div>
+<div class="form-group"><label>Withdrawal Age</label><input type="number" id="withdrawAge" value="65" min="30" max="100"></div>
+<div class="form-group full"><label>Product</label><select id="product"><option value="PII-A">PII-A (Whole Life)</option><option value="FII-A">FII-A (Endowment)</option><option value="MII-GL" selected>MII-GL (Universal Life)</option></select></div>
+<div class="form-group full"><label>Notional Amount (USD)</label><input type="number" id="notional" value="1000000" step="100000"></div>
+</div>
+<div class="section-title">Financing Details</div>
+<div class="form-grid">
+<div class="form-group full"><label>Bank</label><select id="bank"><option value="hsbc" data-ltv="0.9" data-spread="1.2">HSBC (90% LTV)</option><option value="scb" data-ltv="0.85" data-spread="1.35">Standard Chartered (85%)</option><option value="citi" data-ltv="0.9" data-spread="1.1">Citibank (90%)</option><option value="dbs" data-ltv="0.85" data-spread="1.25">DBS (85%)</option><option value="boc" data-ltv="0.8" data-spread="1.3">Bank of China (80%)</option></select></div>
+<div class="form-group"><label>Rate Scenario</label><select id="scenario"><option value="current">Current Rate</option><option value="avg25">25Y Average</option><option value="low">Low Rate</option><option value="high">High Rate</option><option value="custom">Custom</option></select></div>
+<div class="form-group"><label>Custom Rate %</label><input type="number" id="customRate" value="5.5" step="0.1" disabled></div>
+<div class="form-group"><label>Premium Discount %</label><input type="number" id="discount" value="3" step="0.5" min="0" max="15"></div>
+<div class="form-group"><label>Exchange Rate (USD/HKD)</label><input type="number" id="fxRate" value="7.8" step="0.01"></div>
+</div>
+<button class="btn-calc" onclick="calculate()">Calculate</button>
+</div>
+<div class="panel-right">
+<div class="card">
+<div class="section-title">Result Summary</div>
+<div class="summary-grid">
+<div class="summary-item"><div class="val" id="sPremium">-</div><div class="lbl">Annual Premium</div></div>
+<div class="summary-item"><div class="val" id="sLoan">-</div><div class="lbl">Loan Amount</div></div>
+<div class="summary-item"><div class="val" id="sProfit">-</div><div class="lbl">Net Profit</div></div>
+<div class="summary-item"><div class="val" id="sIRR">-</div><div class="lbl">IRR</div></div>
+<div class="summary-item"><div class="val" id="sDiscount">-</div><div class="lbl">Discount Saved</div></div>
+<div class="summary-item"><div class="val" id="sInterest">-</div><div class="lbl">Total Interest</div></div>
+<div class="summary-item"><div class="val" id="sCSV">-</div><div class="lbl">CSV at Withdrawal</div></div>
+<div class="summary-item"><div class="val" id="sAvgRate">-</div><div class="lbl">Avg Interest Rate</div></div>
+</div>
+</div>
+<div class="card">
+<div class="section-title">Projection Chart</div>
+<div class="chart-container"><canvas id="projChart"></canvas></div>
+</div>
+<div class="card">
+<div class="section-title">Year-by-Year Breakdown</div>
+<div class="table-wrap"><table><thead><tr><th>Year</th><th>Age</th><th>Rate%</th><th>Loan Balance</th><th>Monthly Interest</th><th>CSV (Expected)</th><th>Net Value</th><th>IRR%</th></tr></thead><tbody id="tBody"></tbody></table></div>
+</div>
+</div>
+</div>
+<script>
+const scenarios={current:5.5,avg25:4.2,low:2.5,high:7.0};
+let chart=null;
+document.getElementById('scenario').addEventListener('change',function(){document.getElementById('customRate').disabled=this.value!=='custom';});
+document.getElementById('currToggle').addEventListener('change',function(){calculate();});
+function fmt(n,d=0){const isHKD=document.getElementById('currToggle').checked;const v=isHKD?n*parseFloat(document.getElementById('fxRate').value):n;const c=isHKD?'HKD':'USD';return c+' '+v.toLocaleString('en',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function calculate(){
+const age=parseInt(document.getElementById('age').value);
+const wAge=parseInt(document.getElementById('withdrawAge').value);
+const notional=parseFloat(document.getElementById('notional').value);
+const bankSel=document.getElementById('bank');
+const opt=bankSel.options[bankSel.selectedIndex];
+const ltv=parseFloat(opt.dataset.ltv);
+const spread=parseFloat(opt.dataset.spread);
+const scenVal=document.getElementById('scenario').value;
+const baseRate=scenVal==='custom'?parseFloat(document.getElementById('customRate').value):scenarios[scenVal];
+const disc=parseFloat(document.getElementById('discount').value)/100;
+const product=document.getElementById('product').value;
+const policyReturn=product==='MII-GL'?0.055:product==='PII-A'?0.045:0.05;
+const years=wAge-age;
+const premium=notional*0.05;
+const discountAmt=premium*disc;
+const actualPremium=premium-discountAmt;
+const loanAmt=notional*ltv;
+const loanRate=baseRate+spread;
+let totalInterest=0;
+const rows=[];
+const csvData=[];
+const irrData=[];
+const labels=[];
+for(let y=1;y<=years;y++){
+const curAge=age+y;
+const yRate=loanRate+(Math.random()-0.5)*0.3;
+const monthlyInt=loanAmt*yRate/100/12;
+const annualInt=monthlyInt*12;
+totalInterest+=annualInt;
+const csv=notional*Math.pow(1+policyReturn,y)*0.85;
+const netVal=csv-loanAmt-totalInterest;
+const irr=y>0?((Math.pow(csv/(actualPremium),1/y)-1)*100):0;
+rows.push({y,curAge,yRate:yRate.toFixed(2),loanAmt,monthlyInt,csv,netVal,irr:irr.toFixed(2)});
+csvData.push(csv);
+irrData.push(parseFloat(irr.toFixed(2)));
+labels.push(curAge);
+}
+const finalRow=rows[rows.length-1];
+const avgRate=(totalInterest/years/loanAmt*100);
+document.getElementById('sPremium').textContent=fmt(actualPremium);
+document.getElementById('sLoan').textContent=fmt(loanAmt);
+document.getElementById('sProfit').textContent=fmt(finalRow.netVal);
+document.getElementById('sIRR').textContent=finalRow.irr+'%';
+document.getElementById('sDiscount').textContent=fmt(discountAmt);
+document.getElementById('sInterest').textContent=fmt(totalInterest);
+document.getElementById('sCSV').textContent=fmt(finalRow.csv);
+document.getElementById('sAvgRate').textContent=avgRate.toFixed(2)+'%';
+const isHKD=document.getElementById('currToggle').checked;
+const fx=isHKD?parseFloat(document.getElementById('fxRate').value):1;
+const tbody=document.getElementById('tBody');
+tbody.innerHTML='';
+rows.forEach(r=>{
+const tr=document.createElement('tr');
+tr.innerHTML='<td>'+r.y+'</td><td>'+r.curAge+'</td><td>'+r.yRate+'</td><td>'+fmt(r.loanAmt)+'</td><td>'+fmt(r.monthlyInt,0)+'</td><td>'+fmt(r.csv)+'</td><td>'+fmt(r.netVal)+'</td><td>'+r.irr+'</td>';
+tbody.appendChild(tr);
+});
+if(chart)chart.destroy();
+const ctx=document.getElementById('projChart').getContext('2d');
+chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Net CSV',data:csvData.map(v=>isHKD?v*parseFloat(document.getElementById('fxRate').value):v),borderColor:'#a855f7',backgroundColor:'rgba(168,85,247,0.1)',fill:true,tension:0.3,yAxisID:'y'},{label:'IRR %',data:irrData,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:false,tension:0.3,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{y:{type:'linear',position:'left',ticks:{color:'#a855f7',callback:v=>(isHKD?'HKD ':'USD ')+v.toLocaleString()},grid:{color:'#1f1535'}},y1:{type:'linear',position:'right',ticks:{color:'#f59e0b',callback:v=>v+'%'},grid:{drawOnChartArea:false}},x:{ticks:{color:'#9ca3af'},grid:{color:'#1f1535'}}},plugins:{legend:{labels:{color:'#e0e0e0'}}}}});
+}
+calculate();
+</script>
+</body>
+</html>
