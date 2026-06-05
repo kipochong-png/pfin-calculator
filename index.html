@@ -51,29 +51,9 @@ tbody tr:hover{background:#2d1b4e33;}
 .panel-left{width:100%;min-width:auto;}
 .summary-grid{grid-template-columns:repeat(2,1fr);}
 .table-wrap{overflow-x:auto;}
-}
-</style>
-</head>
-<body>
-<div class="header">
-<div class="header-left">
-<div class="logo">PFIN</div>
-<div class="header-title">
-<h1>Earnest Partners</h1>
-<p>Premium Financing Calculator v2.0</p>
-</div>
-</div>
-<div class="currency-toggle">
-<label>USD</label>
-<div class="toggle-switch">
-<input type="checkbox" id="currToggle">
-<label class="toggle-slider" for="currToggle"></label>
-</div>
-<label>HKD</label>
-</div>
-</div>
-<div class="main">
-<div class="panel-left">
+}</style></head>
+<body><div class="header"><div class="header-left"><div class="logo">PFIN</div><div class="header-title"><h1>Earnest Partners</h1><p>Premium Financing Calculator v2.0</p></div></div><div class="currency-toggle"><label>USD</label><div class="toggle-switch"><input type="checkbox" id="currToggle"><label class="toggle-slider" for="currToggle"></label></div><label>HKD</label></div></div>
+<div class="main"><div class="panel-left">
 <div class="section-title">Policy Information</div>
 <div class="form-grid">
 <div class="form-group"><label>Age</label><input type="number" id="age" value="35" min="18" max="75"></div>
@@ -92,35 +72,17 @@ tbody tr:hover{background:#2d1b4e33;}
 <button class="btn-calc" onclick="calculate()">Calculate</button>
 </div>
 <div class="panel-right">
-<div class="card">
-<div class="section-title">Result Summary</div>
-<div class="summary-grid">
-<div class="summary-item"><div class="val" id="sPremium">-</div><div class="lbl">Annual Premium</div></div>
-<div class="summary-item"><div class="val" id="sLoan">-</div><div class="lbl">Loan Amount</div></div>
-<div class="summary-item"><div class="val" id="sProfit">-</div><div class="lbl">Net Profit</div></div>
-<div class="summary-item"><div class="val" id="sIRR">-</div><div class="lbl">IRR</div></div>
-<div class="summary-item"><div class="val" id="sDiscount">-</div><div class="lbl">Discount Saved</div></div>
-<div class="summary-item"><div class="val" id="sInterest">-</div><div class="lbl">Total Interest</div></div>
-<div class="summary-item"><div class="val" id="sCSV">-</div><div class="lbl">CSV at Withdrawal</div></div>
-<div class="summary-item"><div class="val" id="sAvgRate">-</div><div class="lbl">Avg Interest Rate</div></div>
-</div>
-</div>
-<div class="card">
-<div class="section-title">Projection Chart</div>
-<div class="chart-container"><canvas id="projChart"></canvas></div>
-</div>
-<div class="card">
-<div class="section-title">Year-by-Year Breakdown</div>
-<div class="table-wrap"><table><thead><tr><th>Year</th><th>Age</th><th>Rate%</th><th>Loan Balance</th><th>Monthly Interest</th><th>CSV (Expected)</th><th>Net Value</th><th>IRR%</th></tr></thead><tbody id="tBody"></tbody></table></div>
-</div>
-</div>
-</div>
+<div class="card"><div class="section-title">Result Summary</div><div class="summary-grid"><div class="summary-item"><div class="val" id="sPremium">-</div><div class="lbl">Annual Premium</div></div><div class="summary-item"><div class="val" id="sLoan">-</div><div class="lbl">Loan Amount</div></div><div class="summary-item"><div class="val" id="sProfit">-</div><div class="lbl">Net Profit</div></div><div class="summary-item"><div class="val" id="sIRR">-</div><div class="lbl">IRR</div></div><div class="summary-item"><div class="val" id="sDiscount">-</div><div class="lbl">Discount Saved</div></div><div class="summary-item"><div class="val" id="sInterest">-</div><div class="lbl">Total Interest</div></div><div class="summary-item"><div class="val" id="sCSV">-</div><div class="lbl">CSV at Withdrawal</div></div><div class="summary-item"><div class="val" id="sAvgRate">-</div><div class="lbl">Avg Interest Rate</div></div></div></div>
+<div class="card"><div class="section-title">Projection Chart</div><div class="chart-container"><canvas id="projChart"></canvas></div></div>
+<div class="card"><div class="section-title">Year-by-Year Breakdown</div><div class="table-wrap"><table><thead><tr><th>Year</th><th>Age</th><th>Rate%</th><th>Loan Balance</th><th>Monthly Interest</th><th>CSV (Expected)</th><th>Net Value</th><th>IRR%</th></tr></thead><tbody id="tBody"></tbody></table></div></div>
+</div></div>
 <script>
 const scenarios={current:5.5,avg25:4.2,low:2.5,high:7.0};
 let chart=null;
 document.getElementById('scenario').addEventListener('change',function(){document.getElementById('customRate').disabled=this.value!=='custom';});
 document.getElementById('currToggle').addEventListener('change',function(){calculate();});
 function fmt(n,d=0){const isHKD=document.getElementById('currToggle').checked;const v=isHKD?n*parseFloat(document.getElementById('fxRate').value):n;const c=isHKD?'HKD':'USD';return c+' '+v.toLocaleString('en',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function calcIRR(cashflows){let lo=-0.5,hi=2.0;for(let i=0;i<100;i++){let mid=(lo+hi)/2;let npv=0;for(let t=0;t<cashflows.length;t++){npv+=cashflows[t]/Math.pow(1+mid,t);}if(Math.abs(npv)<0.01)return mid;if(npv>0)lo=mid;else hi=mid;}return (lo+hi)/2;}
 function calculate(){
 const age=parseInt(document.getElementById('age').value);
 const wAge=parseInt(document.getElementById('withdrawAge').value);
@@ -145,15 +107,20 @@ const rows=[];
 const csvData=[];
 const irrData=[];
 const labels=[];
+const annualInterests=[];
 for(let y=1;y<=years;y++){
 const curAge=age+y;
 const yRate=loanRate+(Math.random()-0.5)*0.3;
 const monthlyInt=loanAmt*yRate/100/12;
 const annualInt=monthlyInt*12;
 totalInterest+=annualInt;
+annualInterests.push(annualInt);
 const csv=notional*Math.pow(1+policyReturn,y)*0.85;
 const netVal=csv-loanAmt-totalInterest;
-const irr=y>0?((Math.pow(csv/(actualPremium),1/y)-1)*100):0;
+let cfArr=[-actualPremium];
+for(let k=0;k<y;k++){cfArr.push(-annualInterests[k]);}
+cfArr[cfArr.length-1]+=(csv-loanAmt);
+let irr=calcIRR(cfArr)*100;
 rows.push({y,curAge,yRate:yRate.toFixed(2),loanAmt,monthlyInt,csv,netVal,irr:irr.toFixed(2)});
 csvData.push(csv);
 irrData.push(parseFloat(irr.toFixed(2)));
@@ -183,6 +150,4 @@ const ctx=document.getElementById('projChart').getContext('2d');
 chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Net CSV',data:csvData.map(v=>isHKD?v*parseFloat(document.getElementById('fxRate').value):v),borderColor:'#a855f7',backgroundColor:'rgba(168,85,247,0.1)',fill:true,tension:0.3,yAxisID:'y'},{label:'IRR %',data:irrData,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.1)',fill:false,tension:0.3,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{y:{type:'linear',position:'left',ticks:{color:'#a855f7',callback:v=>(isHKD?'HKD ':'USD ')+v.toLocaleString()},grid:{color:'#1f1535'}},y1:{type:'linear',position:'right',ticks:{color:'#f59e0b',callback:v=>v+'%'},grid:{drawOnChartArea:false}},x:{ticks:{color:'#9ca3af'},grid:{color:'#1f1535'}}},plugins:{legend:{labels:{color:'#e0e0e0'}}}}});
 }
 calculate();
-</script>
-</body>
-</html>
+</script></body></html>
