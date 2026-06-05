@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Earnest Partners - MII Premium Financing Calculator</title>
+<title>Earnest Partners - PFIN Premium Financing Calculator</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -57,7 +57,7 @@ tbody tr:hover{background:#2d1b4e33;}
 <body>
 <div class="header">
 <div class="header-left">
-<div class="logo">MII</div>
+<div class="logo">PFIN</div>
 <div class="header-title">
 <h1>Earnest Partners</h1>
 <p>Premium Financing Calculator v2.0</p>
@@ -78,7 +78,7 @@ tbody tr:hover{background:#2d1b4e33;}
 <div class="form-grid">
 <div class="form-group"><label>Age</label><input type="number" id="age" value="35" min="18" max="75"></div>
 <div class="form-group"><label>Withdrawal Age</label><input type="number" id="withdrawAge" value="65" min="30" max="100"></div>
-<div class="form-group full"><label>Product</label><select id="product"><option value="PII-A">PII-A (Whole Life)</option><option value="FII-A">FII-A (Endowment)</option><option value="MII-GL" selected>MII-GL (Universal Life)</option></select></div>
+<div class="form-group full"><label>Product</label><select id="product"><option value="PII-A">PII-A (Whole Life)</option><option value="FII-A">FII-A (Endowment)</option><option value="PFIN-GL" selected>PFIN-GL (Universal Life)</option></select></div>
 <div class="form-group full"><label>Notional Amount (USD)</label><input type="number" id="notional" value="1000000" step="100000"></div>
 </div>
 <div class="section-title">Financing Details</div>
@@ -133,7 +133,7 @@ const scenVal=document.getElementById('scenario').value;
 const baseRate=scenVal==='custom'?parseFloat(document.getElementById('customRate').value):scenarios[scenVal];
 const disc=parseFloat(document.getElementById('discount').value)/100;
 const product=document.getElementById('product').value;
-const policyReturn=product==='MII-GL'?0.055:product==='PII-A'?0.045:0.05;
+const policyReturn=product==='PFIN-GL'?0.055:product==='PII-A'?0.045:0.05;
 const years=wAge-age;
 const premium=notional*0.05;
 const discountAmt=premium*disc;
